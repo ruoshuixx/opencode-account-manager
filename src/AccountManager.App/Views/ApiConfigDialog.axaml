@@ -1,0 +1,46 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AccountManager.App.Views.ApiConfigDialog"
+        Width="560" Height="680" MinWidth="540" MinHeight="540"
+        WindowStartupLocation="CenterOwner"
+        Icon="avares://OpenCodeAccountManager/Assets/app.ico"
+        Title="配置 API 供应商">
+  <Grid Margin="22" RowDefinitions="Auto,*,Auto">
+    <StackPanel Spacing="6" Margin="0,0,0,14">
+      <TextBlock x:Name="HeaderText" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" />
+      <TextBlock x:Name="ProviderText" Classes="subtitle" TextWrapping="Wrap" />
+    </StackPanel>
+    <ScrollViewer Grid.Row="1">
+      <StackPanel Spacing="10" Margin="0,0,4,8">
+        <TextBlock Text="供应商名称（仅修改显示名称，不改变 ID）" FontWeight="SemiBold" />
+        <TextBox x:Name="NameBox" MaxLength="120" />
+
+        <TextBlock Text="接口地址（baseURL，必须 https）" FontWeight="SemiBold" />
+        <TextBox x:Name="BaseUrlBox" Watermark="https://example.com/v1" />
+
+        <TextBlock Text="模型 ID（每行一个或用逗号分隔）" FontWeight="SemiBold" />
+        <TextBox x:Name="ModelsBox" AcceptsReturn="True" Height="100" TextWrapping="NoWrap"
+                 Watermark="gpt-4o&#x0a;gpt-4o-mini" />
+
+        <TextBlock Text="API 协议" FontWeight="SemiBold" />
+        <StackPanel Orientation="Horizontal" Spacing="18">
+          <RadioButton x:Name="ChatRadio" GroupName="ApiProtocol" Content="Chat Completions" />
+          <RadioButton x:Name="ResponsesRadio" GroupName="ApiProtocol" Content="Responses" />
+        </StackPanel>
+        <TextBlock Text="Chat Completions 调用 /chat/completions，Responses 调用 /responses；URL 填基础地址，不要追加接口路径。"
+                   Classes="subtitle" TextWrapping="Wrap" />
+
+        <TextBlock Text="API 密钥（留空表示保留当前密钥）" FontWeight="SemiBold" />
+        <TextBox x:Name="KeyBox" PasswordChar="*" Watermark="sk-..." />
+        <TextBlock x:Name="HintText" Classes="subtitle" TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+    <StackPanel Grid.Row="2" Spacing="10" Margin="0,12,0,0">
+      <TextBlock x:Name="ErrorText" Classes="error" />
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+        <Button Classes="primary" Content="保存" Click="OnSave" />
+        <Button Classes="toolbar" Content="取消" Click="OnCancel" />
+      </StackPanel>
+    </StackPanel>
+  </Grid>
+</Window>

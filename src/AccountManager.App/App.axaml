@@ -1,0 +1,216 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="using:AccountManager.App.Converters"
+             x:Class="AccountManager.App.App"
+             RequestedThemeVariant="Dark">
+
+  <Application.Resources>
+    <!-- ===== palette ===== -->
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#0E1116" />
+    <SolidColorBrush x:Key="CardBrush" Color="#161A22" />
+    <SolidColorBrush x:Key="HeaderBrush" Color="#1A1F2A" />
+    <SolidColorBrush x:Key="HoverBrush" Color="#1E2431" />
+    <SolidColorBrush x:Key="BorderBrush" Color="#252B38" />
+    <SolidColorBrush x:Key="TrackBrush" Color="#2A3040" />
+    <SolidColorBrush x:Key="TrackBorderBrush" Color="#3A4256" />
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#E7EAF2" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#8B94A9" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#6C7CFF" />
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="#7E8CFF" />
+    <SolidColorBrush x:Key="SuccessBrush" Color="#4FD08A" />
+    <SolidColorBrush x:Key="WarningBrush" Color="#E0A13B" />
+    <SolidColorBrush x:Key="CriticalBrush" Color="#E5605E" />
+    <SolidColorBrush x:Key="ChipBgBrush" Color="#232838" />
+    <SolidColorBrush x:Key="ChipAccentBgBrush" Color="#252B47" />
+    <SolidColorBrush x:Key="ChipSuccessBgBrush" Color="#15301F" />
+    <SolidColorBrush x:Key="ChipWarnBgBrush" Color="#33270F" />
+
+    <!-- ===== icons (Material paths, 24x24) ===== -->
+    <StreamGeometry x:Key="IcoAdd">M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z</StreamGeometry>
+    <StreamGeometry x:Key="IcoRead">M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z</StreamGeometry>
+    <StreamGeometry x:Key="IcoImport">M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z</StreamGeometry>
+    <StreamGeometry x:Key="IcoExport">M9,16V10H5L12,3L19,10H15V16H9M5,20H19V18H5V20Z</StreamGeometry>
+    <StreamGeometry x:Key="IcoSettings">M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z</StreamGeometry>
+
+    <StreamGeometry x:Key="IcoRefresh">M12,18A6,6 0 0,1 6,12C6,11 6.25,10.03 6.7,9.2L5.24,7.74C4.46,8.97 4,10.43 4,12A8,8 0 0,0 12,20V23L16,19L12,15M12,4V1L8,5L12,9V6A6,6 0 0,1 18,12C18,13 17.75,13.97 17.3,14.8L18.76,16.26C19.54,15.03 20,13.57 20,12A8,8 0 0,0 12,4Z</StreamGeometry>
+    <StreamGeometry x:Key="IcoCheckAll">M0.41,13.41L6,19L7.41,17.59L1.83,12M22.24,5.58L11.66,16.17L7.5,12L6.07,13.41L11.66,19L23.66,7M18,7L16.59,5.58L10.24,11.93L11.66,13.34L18,7Z</StreamGeometry>
+    <StreamGeometry x:Key="IcoSwitch">M6.99,11L3,15L6.99,19V16H14V14H6.99V11M21,5L17.01,1V4H10V6H17.01V9L21,5Z</StreamGeometry>
+    <StreamGeometry x:Key="IcoEdit">M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z</StreamGeometry>
+    <StreamGeometry x:Key="IcoTrash">M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z</StreamGeometry>
+  </Application.Resources>
+
+  <Application.Styles>
+    <FluentTheme />
+
+    <Style Selector="Window">
+      <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
+      <Setter Property="FontSize" Value="13" />
+    </Style>
+
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+
+    <Style Selector="ToolTip TextBlock">
+      <Setter Property="MaxWidth" Value="340" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="Button.help">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="Padding" Value="4,1" />
+      <Setter Property="MinHeight" Value="24" />
+      <Setter Property="ToolTip.ShowDelay" Value="400" />
+    </Style>
+    <Style Selector="Border.card">
+      <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+    </Style>
+
+    <Style Selector="TextBlock.title">
+      <Setter Property="FontSize" Value="19" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="TextBlock.subtitle">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    </Style>
+    <Style Selector="TextBlock.muted">
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    </Style>
+    <Style Selector="TextBlock.error">
+      <Setter Property="Foreground" Value="{DynamicResource CriticalBrush}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="TextBlock.colhead">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- buttons -->
+    <Style Selector="Button.toolbar">
+      <Setter Property="Background" Value="{DynamicResource HeaderBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="9" />
+      <Setter Property="Padding" Value="12,7" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="Button.toolbar:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+    </Style>
+
+    <Style Selector="Button.primary">
+      <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="Foreground" Value="#0E1116" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="CornerRadius" Value="9" />
+      <Setter Property="Padding" Value="14,7" />
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}" />
+    </Style>
+    <Style Selector="Button.primary PathIcon">
+      <Setter Property="Foreground" Value="#0E1116" />
+    </Style>
+
+    <Style Selector="Button.mini">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Padding" Value="8,4" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+      <Setter Property="Margin" Value="0,0,4,0" />
+    </Style>
+    <Style Selector="Button.mini:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+    </Style>
+
+    <Style Selector="Button.danger">
+      <Setter Property="Foreground" Value="{DynamicResource CriticalBrush}" />
+    </Style>
+    <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#2A1A1C" />
+    </Style>
+
+    <!-- chips -->
+    <Style Selector="Border.chip">
+      <Setter Property="Background" Value="{DynamicResource ChipBgBrush}" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding" Value="8,2" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.chip TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Border.chip.accent">
+      <Setter Property="Background" Value="{DynamicResource ChipAccentBgBrush}" />
+    </Style>
+    <Style Selector="Border.chip.accent TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+    </Style>
+    <Style Selector="Border.chip.success">
+      <Setter Property="Background" Value="{DynamicResource ChipSuccessBgBrush}" />
+    </Style>
+    <Style Selector="Border.chip.success TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+    </Style>
+    <Style Selector="Border.chip.warn">
+      <Setter Property="Background" Value="{DynamicResource ChipWarnBgBrush}" />
+    </Style>
+    <Style Selector="Border.chip.warn TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
+    </Style>
+
+    <!-- chip-shaped button: the reset-credits badge doubles as the "reset" action -->
+    <Style Selector="Button.chipAction">
+      <Setter Property="Background" Value="{DynamicResource ChipAccentBgBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding" Value="9,2" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.chipAction:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ChipAccentBgBrush}" />
+    </Style>
+    <Style Selector="Button.chipAction:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ChipAccentBgBrush}" />
+    </Style>
+
+    <!-- list rows: only the item containers carry the row separator and hover fill. A descendant selector
+         also matched every ContentPresenter inside a row (button faces, quota cells), which gave them
+         a bottom-only border that read as an underline. -->
+    <Style Selector="ItemsControl.accountList > ContentPresenter">
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+      <Setter Property="BorderThickness" Value="0,0,0,1" />
+    </Style>
+    <Style Selector="ItemsControl.accountList > ContentPresenter:pointerover">
+      <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+    </Style>
+
+    <Style Selector="TextBox.search">
+      <Setter Property="CornerRadius" Value="9" />
+      <Setter Property="Padding" Value="10,6" />
+      <Setter Property="MinWidth" Value="210" />
+    </Style>
+
+    <Style Selector="PathIcon">
+      <Setter Property="Width" Value="14" />
+      <Setter Property="Height" Value="14" />
+    </Style>
+  </Application.Styles>
+</Application>

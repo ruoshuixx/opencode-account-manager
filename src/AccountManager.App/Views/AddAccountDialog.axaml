@@ -1,0 +1,78 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AccountManager.App.ViewModels"
+        x:Class="AccountManager.App.Views.AddAccountDialog"
+        x:DataType="vm:AddAccountViewModel"
+        Width="620" Height="640" MinHeight="540" MinWidth="540"
+        WindowStartupLocation="CenterOwner"
+        Icon="avares://OpenCodeAccountManager/Assets/app.ico"
+        Title="添加账号">
+  <Grid Margin="22" RowDefinitions="Auto,*,Auto,Auto">
+    <StackPanel Spacing="5" Margin="0,0,0,16">
+      <TextBlock Text="添加账号" Classes="title" />
+      <TextBlock Text="浏览器授权添加 Codex，或手动配置 OpenAI 兼容 API" Classes="subtitle" />
+    </StackPanel>
+    <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}" IsEnabled="{Binding !IsSaving}">
+      <TabItem Header="OpenAI OAuth">
+        <ScrollViewer>
+          <StackPanel Spacing="14" Margin="2,16,2,8">
+            <TextBlock Text="在浏览器中完成 OpenAI 账号 OAuth 授权" FontSize="15" FontWeight="SemiBold" />
+            <TextBlock Text="登录操作在 OpenAI 官方页面完成，本工具不读取密码。若浏览器已经登录其他账号，请先切换到你要添加的账号，或复制链接到其他浏览器授权。" Classes="subtitle" TextWrapping="Wrap" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Button Content="在浏览器中打开" Classes="primary" Command="{Binding OpenBrowserCommand}" />
+              <Button Content="重新授权" Classes="toolbar" Command="{Binding RestartAuthorizationCommand}" />
+            </StackPanel>
+            <StackPanel Spacing="6" IsVisible="{Binding HasAuthorizationUrl}">
+              <TextBlock Text="授权链接" FontWeight="SemiBold" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBox Text="{Binding AuthorizationUrl}" IsReadOnly="True" />
+                <Button Grid.Column="1" Content="复制" Classes="toolbar" Click="OnCopyLink" Margin="8,0,0,0" />
+              </Grid>
+            </StackPanel>
+            <Border Classes="card" Padding="14">
+              <StackPanel Spacing="8">
+                <TextBlock Text="回调地址（没有自动回调时使用）" FontWeight="SemiBold" />
+                <TextBlock Text="授权后若未自动返回，请复制浏览器地址栏中的完整回调地址，包括 code 和 state。" Classes="subtitle" TextWrapping="Wrap" />
+                <TextBox Text="{Binding CallbackUrl, Mode=TwoWay}"
+                         Watermark="http://localhost:1455/auth/callback?code=…&amp;state=…"
+                         IsEnabled="{Binding WaitingForAuthorization}" />
+                <Button Content="完成授权" Classes="toolbar" Command="{Binding SubmitCallbackCommand}" HorizontalAlignment="Left" />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Header="添加 API">
+        <ScrollViewer>
+          <StackPanel Spacing="8" Margin="2,16,2,8">
+            <TextBlock Text="供应商名称" FontWeight="SemiBold" />
+            <TextBox Text="{Binding DisplayName, Mode=TwoWay}" MaxLength="120" Watermark="例如：火山 Coding Plan" />
+            <TextBlock Text="URL（baseURL，必须 HTTPS）" FontWeight="SemiBold" />
+            <TextBox Text="{Binding BaseUrl, Mode=TwoWay}" Watermark="https://example.com/v1" />
+            <TextBlock Text="模型 list（每行一个或用逗号分隔）" FontWeight="SemiBold" />
+            <TextBox Text="{Binding ModelsText, Mode=TwoWay}" AcceptsReturn="True" Height="90" TextWrapping="NoWrap"
+                     Watermark="gpt-4o&#x0a;gpt-4o-mini" />
+            <TextBlock Text="API Key" FontWeight="SemiBold" />
+            <TextBox Text="{Binding ApiKey, Mode=TwoWay}" PasswordChar="*" Watermark="填写供应商提供的密钥" />
+            <TextBlock Text="API 协议" FontWeight="SemiBold" Margin="0,4,0,0" />
+            <StackPanel Orientation="Horizontal" Spacing="18">
+              <RadioButton GroupName="ApiProtocol" Content="Chat Completions" IsChecked="{Binding UseChat, Mode=TwoWay}" />
+              <RadioButton GroupName="ApiProtocol" Content="Responses" IsChecked="{Binding UseResponses, Mode=TwoWay}" />
+            </StackPanel>
+            <TextBlock Text="Chat Completions 调用 /chat/completions，Responses 调用 /responses；URL 填基础地址，不要追加接口路径。" Classes="subtitle" TextWrapping="Wrap" />
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+    </TabControl>
+    <StackPanel Grid.Row="2" Spacing="7" Margin="0,12,0,12">
+      <ProgressBar IsIndeterminate="True" Height="3" IsVisible="{Binding IsWorking}" />
+      <TextBlock Text="{Binding StatusText}" Classes="subtitle" TextWrapping="Wrap" />
+      <TextBlock Text="{Binding ErrorText}" Classes="error" />
+    </StackPanel>
+    <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+      <Button Content="保存账号" Classes="primary" Command="{Binding SaveOAuthCommand}" IsVisible="{Binding IsOAuthTab}" />
+      <Button Content="添加 API" Classes="primary" Command="{Binding SaveApiCommand}" IsVisible="{Binding IsApiTab}" />
+      <Button Content="关闭" Classes="toolbar" Click="OnClose" IsEnabled="{Binding !IsSaving}" />
+    </StackPanel>
+  </Grid>
+</Window>

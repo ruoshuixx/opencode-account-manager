@@ -1,0 +1,291 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AccountManager.App.ViewModels"
+        xmlns:conv="using:AccountManager.App.Converters"
+        xmlns:controls="using:AccountManager.App.Controls"
+        x:Class="AccountManager.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="OpenCode 账号管理"
+        Icon="avares://OpenCodeAccountManager/Assets/app.ico"
+        Width="1140" Height="720"
+        MinWidth="1000" MinHeight="560"
+        WindowStartupLocation="CenterScreen">
+
+  <Window.Resources>
+    <!-- one quota window: exact-width bar + remaining %, or a plain state note -->
+    <DataTemplate x:Key="QuotaCellTemplate" x:DataType="vm:QuotaCellViewModel">
+      <Grid RowDefinitions="Auto,Auto" VerticalAlignment="Center" ToolTip.Tip="{Binding Tooltip}">
+        <Grid Grid.Row="0" ColumnDefinitions="*,40">
+          <controls:QuotaBar Grid.Column="0"
+                             Height="5"
+                             VerticalAlignment="Center"
+                             Margin="0,0,7,0"
+                             Value="{Binding Percent}"
+                             Track="{DynamicResource TrackBrush}"
+                             TrackBorder="{DynamicResource TrackBorderBrush}"
+                             Fill="{Binding Level, Converter={x:Static conv:QuotaLevelToBrushConverter.Instance}}"
+                             IsVisible="{Binding HasBar}" />
+          <TextBlock Grid.Column="1"
+                     Text="{Binding Text}"
+                     HorizontalAlignment="Left"
+                     VerticalAlignment="Center"
+                     FontSize="12"
+                     FontWeight="SemiBold"
+                     IsVisible="{Binding HasBar}"
+                     Foreground="{Binding Level, Converter={x:Static conv:QuotaLevelToBrushConverter.Instance}}" />
+          <TextBlock Grid.Column="0" Grid.ColumnSpan="2"
+                     Text="{Binding Text}"
+                     IsVisible="{Binding !HasBar}"
+                     Classes="muted"
+                     FontSize="12"
+                     VerticalAlignment="Center" />
+        </Grid>
+        <TextBlock Grid.Row="1"
+                   Text="{Binding ResetText}"
+                   IsVisible="{Binding HasBar}"
+                   Classes="muted"
+                   FontSize="10.5"
+                   TextTrimming="CharacterEllipsis"
+                   Margin="0,3,0,0" />
+      </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:Key="ImportRowTemplate" x:DataType="vm:AccountRowViewModel">
+      <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="6,4">
+        <Grid ColumnDefinitions="30,*,90,120">
+          <CheckBox Grid.Column="0" IsChecked="{Binding IsImportSelected}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+          <StackPanel Grid.Column="1" VerticalAlignment="Center">
+            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+            <TextBlock Classes="subtitle" Text="{Binding Subtitle}" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+          <TextBlock Grid.Column="2" Text="{Binding PlanText}" Classes="muted" VerticalAlignment="Center" />
+          <TextBlock Grid.Column="3" Text="{Binding Row.Status}" Classes="muted" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+        </Grid>
+      </Border>
+    </DataTemplate>
+
+    <DataTemplate x:Key="AccountRowTemplate" x:DataType="vm:AccountRowViewModel">
+      <Grid ColumnDefinitions="40,*,172,148,148,205"
+            Height="54"
+            HorizontalAlignment="Stretch"
+            IsVisible="{Binding IsVisible}">
+
+        <!-- selection: query quota (Codex) and/or export (saved accounts) -->
+        <CheckBox Grid.Column="0"
+                  IsChecked="{Binding IsQuotaSelected}"
+                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                  ToolTip.Tip="勾选后：可查询额度（Codex 行）、可导出（已保存账号）" />
+
+        <!-- account identity -->
+        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,10,0" Spacing="3">
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <Border Classes="chip success" IsVisible="{Binding IsCurrent}">
+              <TextBlock Text="当前" />
+            </Border>
+            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13.5" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+          <TextBlock Classes="subtitle" Text="{Binding Subtitle}" IsVisible="{Binding HasSubtitle}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding AccountTooltip}" />
+        </StackPanel>
+
+        <!-- subscription info: team-coloured plan badge + remaining days -->
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="0,0,10,0" ToolTip.Tip="{Binding SubscriptionTooltip}">
+          <Border Classes="chip" Background="{Binding PlanBackground}" Padding="8,2">
+            <TextBlock Text="{Binding PlanText}" Foreground="{Binding PlanForeground}" FontWeight="SemiBold" FontSize="11" />
+          </Border>
+          <TextBlock Text="{Binding SubscriptionDaysText}" Classes="muted" FontSize="12" VerticalAlignment="Center" />
+          <Button Classes="chipAction"
+                  Content="{Binding ResetCreditsText}"
+                  Command="{Binding ResetCommand}"
+                  IsVisible="{Binding IsCodex}"
+                  ToolTip.Tip="{Binding ResetCreditsTooltip}" />
+        </StackPanel>
+
+        <ContentControl Grid.Column="3"
+                        Content="{Binding Quota5h}"
+                        ContentTemplate="{StaticResource QuotaCellTemplate}"
+                        IsVisible="{Binding IsCodex}"
+                        VerticalAlignment="Center" Margin="0,0,12,0" />
+        <TextBlock Grid.Column="3" Text="—" Classes="muted" VerticalAlignment="Center" IsVisible="{Binding IsApi}" />
+
+        <ContentControl Grid.Column="4"
+                        Content="{Binding QuotaWk}"
+                        ContentTemplate="{StaticResource QuotaCellTemplate}"
+                        IsVisible="{Binding IsCodex}"
+                        VerticalAlignment="Center" Margin="0,0,12,0" />
+        <TextBlock Grid.Column="4" Text="—" Classes="muted" VerticalAlignment="Center" IsVisible="{Binding IsApi}" />
+
+        <!-- actions -->
+        <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center">
+          <Button Classes="mini" Command="{Binding SwitchCommand}" IsVisible="{Binding IsCodex}" ToolTip.Tip="激活该账号为当前 OpenCode 凭据">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+              <PathIcon Data="{StaticResource IcoSwitch}" />
+              <TextBlock Text="切号" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Classes="mini" Command="{Binding RefreshCommand}" IsVisible="{Binding IsCodex}" ToolTip.Tip="只读查询该账号额度">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+              <PathIcon Data="{StaticResource IcoRead}" />
+              <TextBlock Text="查询" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Classes="mini" Command="{Binding ConfigureCommand}" IsVisible="{Binding IsApi}" ToolTip.Tip="编辑供应商名称、协议、地址与模型">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+              <PathIcon Data="{StaticResource IcoEdit}" />
+              <TextBlock Text="配置" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Classes="mini danger" Command="{Binding DeleteCommand}" ToolTip.Tip="真正删除凭据 / 供应商配置">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+              <PathIcon Data="{StaticResource IcoTrash}" />
+              <TextBlock Text="删除" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+        </StackPanel>
+      </Grid>
+    </DataTemplate>
+  </Window.Resources>
+
+  <!-- Zoom host: scales the whole layout down only when the work area is smaller than the designed
+       minimum (see DialogWindowBounds.FitMainBounds). Without a zoom it is a pass-through. -->
+  <LayoutTransformControl x:Name="ZoomHost">
+  <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
+
+    <!-- single toolbar row: list ops (left) | warning | file ops + settings (right) -->
+    <Border Grid.Row="0" Classes="card" Margin="14,14,14,8" Padding="16,9,12,9">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <CheckBox Content="全选" IsChecked="{Binding SelectAllVisibleChecked, Mode=TwoWay}" VerticalAlignment="Center" ToolTip.Tip="全选 / 取消当前可见行" />
+          <Button Classes="primary" Command="{Binding QuerySelectedCommand}" ToolTip.Tip="只读刷新勾选账号的额度">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IcoRefresh}" />
+              <TextBlock Text="刷新" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Classes="toolbar danger"
+                  Command="{Binding DeleteSelectedCommand}"
+                  IsEnabled="{Binding !IsBusy}"
+                  ToolTip.Tip="删除勾选的账号或 API（每项删除前先做加密备份，需确认）">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <PathIcon Data="{StaticResource IcoTrash}" />
+              <TextBlock Text="删除" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+        </StackPanel>
+        <TextBlock Grid.Column="1" Classes="error" Text="{Binding ProviderWarning}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,12,0" TextTrimming="CharacterEllipsis" />
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Button Classes="toolbar" Command="{Binding ReadOpenCodeCommand}">
+            <ToolTip.Tip>
+              <StackPanel>
+                <TextBlock Text="重新读取本机 OpenCode 账号" />
+                <TextBlock Text="{Binding CliStatus}" MaxWidth="560" TextWrapping="Wrap" Opacity="0.8" />
+              </StackPanel>
+            </ToolTip.Tip>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <PathIcon Data="{StaticResource IcoRead}" />
+              <TextBlock Text="读取" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Classes="toolbar" Command="{Binding ImportCommand}" ToolTip.Tip="解析 Cockpit 导出文件">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <PathIcon Data="{StaticResource IcoImport}" />
+              <TextBlock Text="导入" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Classes="toolbar" Command="{Binding ExportCommand}" ToolTip.Tip="导出勾选的已保存账号">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <PathIcon Data="{StaticResource IcoExport}" />
+              <TextBlock Text="导出" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Classes="toolbar" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="设置">
+            <PathIcon Data="{StaticResource IcoSettings}" />
+          </Button>
+          <Button Classes="primary" Command="{Binding AddAccountCommand}" IsEnabled="{Binding !IsBusy}" ToolTip.Tip="添加账号：浏览器 OAuth 授权或添加 API 供应商">
+            <PathIcon Data="{StaticResource IcoAdd}" />
+          </Button>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Border Grid.Row="1" Classes="card" Margin="14,0,14,8" Padding="14,8" IsVisible="{Binding HasUpdate}">
+      <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto">
+        <TextBlock Text="{Binding UpdateStatusText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+        <Button Grid.Column="1" Classes="primary" Content="升级并重启" Command="{Binding InstallUpdateCommand}" IsVisible="{Binding !IsUpdating}" />
+        <Button Grid.Column="2" Classes="mini" Content="取消下载" Command="{Binding CancelUpdateCommand}" IsVisible="{Binding CanCancelUpdate}" />
+        <ProgressBar Grid.Row="1" Grid.ColumnSpan="3" Minimum="0" Maximum="100" Value="{Binding UpdateProgress}" Height="6" Margin="0,8,0,0" IsVisible="{Binding IsUpdating}" />
+      </Grid>
+    </Border>
+
+    <!-- body -->
+    <Border Grid.Row="2" Classes="card" Margin="14,0,14,8">
+      <Grid RowDefinitions="Auto,Auto,*">
+
+        <!-- import preview -->
+        <Border Grid.Row="0"
+                IsVisible="{Binding ImportPanelVisible}"
+                Background="{DynamicResource ChipWarnBgBrush}"
+                CornerRadius="10" Margin="10,10,10,0" Padding="12">
+          <Grid RowDefinitions="Auto,*">
+            <Grid ColumnDefinitions="*,Auto,Auto">
+              <TextBlock Text="{Binding ImportSummary}" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+              <Button Grid.Column="1" Classes="primary" Content="确认导入" Command="{Binding CommitImportCommand}" Margin="8,0,0,0" />
+              <Button Grid.Column="2" Classes="toolbar" Content="取消" Command="{Binding CancelImportCommand}" Margin="8,0,0,0" />
+            </Grid>
+            <ScrollViewer Grid.Row="1" MaxHeight="150" Margin="0,8,0,0">
+              <ItemsControl ItemsSource="{Binding ImportRows}" ItemTemplate="{StaticResource ImportRowTemplate}" />
+            </ScrollViewer>
+          </Grid>
+        </Border>
+
+        <!-- list header -->
+        <Grid Grid.Row="1" ColumnDefinitions="40,*,172,148,148,205" Margin="10,12,10,8">
+          <TextBlock Grid.Column="0" Classes="colhead" Text="选择" HorizontalAlignment="Center" />
+          <TextBlock Grid.Column="1" Classes="colhead" Text="账号" />
+          <TextBlock Grid.Column="2" Classes="colhead" Text="订阅信息" />
+          <TextBlock Grid.Column="3" Classes="colhead" Text="5 小时窗口（剩余）" />
+          <TextBlock Grid.Column="4" Classes="colhead" Text="本周窗口（剩余）" />
+          <TextBlock Grid.Column="5" Classes="colhead" Text="操作" />
+        </Grid>
+
+        <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
+          <ItemsControl Classes="accountList" ItemsSource="{Binding Accounts}" ItemTemplate="{StaticResource AccountRowTemplate}" />
+        </ScrollViewer>
+      </Grid>
+    </Border>
+
+    <!-- log panel -->
+    <Border Grid.Row="3" Classes="card" Margin="14,0,14,8" Padding="10" IsVisible="{Binding LogExpanded}" MaxHeight="190">
+      <Grid RowDefinitions="Auto,*">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Text="运行日志" FontWeight="SemiBold" VerticalAlignment="Center" />
+          <Button Classes="mini" Content="打开日志目录" Command="{Binding RevealLogsCommand}" />
+          <Button Classes="mini" Content="清空" Command="{Binding ClearLogCommand}" />
+        </StackPanel>
+        <ScrollViewer Grid.Row="1" Margin="0,6,0,0">
+          <ItemsControl ItemsSource="{Binding LogLines}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="x:String">
+                <TextBlock Text="{Binding}" FontFamily="Consolas,Menlo,monospace" FontSize="11" TextWrapping="NoWrap" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Grid>
+    </Border>
+
+    <!-- status bar -->
+    <Border Grid.Row="4" Margin="14,0,14,14">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <ProgressBar Grid.Column="0" IsIndeterminate="True" Width="70" Height="5" VerticalAlignment="Center" Margin="0,0,10,0" IsVisible="{Binding IsWorking}" />
+        <TextBlock Grid.Column="1" Text="{Binding StatusText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+          <TextBlock Text="{Binding SummaryText}" Classes="subtitle" />
+          <TextBlock Text="{Binding CurrentText}" Classes="subtitle" />
+          <Button Classes="mini" Content="检查更新" Command="{Binding CheckUpdatesCommand}" IsEnabled="{Binding !IsUpdating}" ToolTip.Tip="{Binding CurrentVersionText}" />
+          <ToggleButton Content="日志" IsChecked="{Binding LogExpanded}" Padding="8,2" />
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+  </LayoutTransformControl>
+</Window>

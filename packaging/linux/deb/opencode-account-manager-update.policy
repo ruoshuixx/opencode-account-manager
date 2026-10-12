@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1.0/policyconfig.dtd">
+<policyconfig>
+  <vendor>OpenCode Account Manager</vendor>
+  <action id="io.github.ruoshuixx.opencode-account-manager.update">
+    <description>Install an OpenCode Account Manager update</description>
+    <description xml:lang="zh_CN">安装 OpenCode 账号管理的更新</description>
+    <message>Authentication is required to install an OpenCode Account Manager update</message>
+    <message xml:lang="zh_CN">安装 OpenCode 账号管理的更新需要管理员授权</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/lib/opencode-account-manager/install-update</annotate>
+  </action>
+</policyconfig>

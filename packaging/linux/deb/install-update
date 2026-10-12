@@ -1,0 +1,48 @@
+#!/bin/bash
+# Root helper for the in-app update of the .deb installation. Started through pkexec by
+# apply-update.sh; never run by the application directly.
+#
+#   install-update <absolute-path-to-.deb> <expected-sha256>
+#
+# The package is copied into a root-owned directory through one descriptor and the copy is hashed,
+# so changing the original afterwards has no effect. Only a newer opencode-account-manager amd64
+# package whose SHA-256 equals the value the application verified against the GitHub release is
+# installed.
+set -euo pipefail
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
+umask 077
+package=opencode-account-manager
+
+die() { printf 'install-update: %s\n' "$1" >&2; exit "${2:-1}"; }
+
+[[ $# -eq 2 ]] || die 'usage: install-update <deb> <sha256>' 64
+deb=$1
+expected=${2,,}
+[[ $expected =~ ^[0-9a-f]{64}$ ]] || die 'the checksum argument is not a SHA-256 value' 64
+[[ $deb == /* && $deb != *$'\n'* ]] || die 'the package path must be absolute' 65
+[[ -f $deb && ! -L $deb ]] || die 'the package is not a regular file' 65
+caller=${PKEXEC_UID:-}
+[[ $caller =~ ^[0-9]+$ ]] || die 'this helper must be started through pkexec' 66
+[[ $(stat -c %u -- "$deb") == "$caller" ]] || die 'the package is not owned by the invoking user' 66
+
+work=$(mktemp -d /var/tmp/opencode-account-manager-update.XXXXXX)
+trap 'rm -rf -- "$work"' EXIT
+copy=$work/$package.deb
+dd if="$deb" of="$copy" iflag=nofollow bs=1M status=none || die 'the package could not be read' 65
+
+actual=$(sha256sum -- "$copy" | cut -d' ' -f1)
+[[ $actual == "$expected" ]] || die 'the package checksum does not match' 67
+[[ $(dpkg-deb --field "$copy" Package) == "$package" ]] || die 'the package has an unexpected name' 68
+[[ $(dpkg-deb --field "$copy" Architecture) == amd64 ]] || die 'the package has an unexpected architecture' 68
+
+new=$(dpkg-deb --field "$copy" Version)
+current=$(dpkg-query -W -f='${Version}' "$package" 2>/dev/null || true)
+if [[ -n $current ]] && ! dpkg --compare-versions "$new" gt "$current"; then
+    die "version $new is not newer than the installed $current" 69
+fi
+
+# Verified: let apt read it (the _apt user needs a readable directory) and resolve dependencies.
+chmod 0755 "$work"
+chmod 0644 "$copy"
+export DEBIAN_FRONTEND=noninteractive
+apt-get install -y --no-install-recommends -o Dpkg::Options::=--force-confold "$copy"

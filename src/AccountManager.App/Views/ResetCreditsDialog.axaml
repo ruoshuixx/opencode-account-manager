@@ -1,0 +1,51 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="using:AccountManager.App.Views"
+        x:Class="AccountManager.App.Views.ResetCreditsDialog"
+        Width="620" SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Icon="avares://OpenCodeAccountManager/Assets/app.ico"
+        Title="重置用量">
+  <StackPanel Margin="22" Spacing="14">
+    <TextBlock x:Name="HeaderText" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" />
+    <TextBlock x:Name="SummaryText" Classes="subtitle" />
+
+    <Border x:Name="TargetBanner" Classes="card" Padding="10">
+      <TextBlock x:Name="TargetText" TextWrapping="Wrap" />
+    </Border>
+
+    <TextBlock Text="重置次数明细" FontWeight="SemiBold" />
+    <ScrollViewer MaxHeight="240">
+      <ItemsControl x:Name="CreditsList">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="views:ResetCreditRow">
+            <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="0,7">
+              <Grid ColumnDefinitions="Auto,*,Auto">
+                <Border Grid.Column="0" CornerRadius="6" Padding="8,2" VerticalAlignment="Center"
+                        Background="{Binding StatusBackground}">
+                  <TextBlock Text="{Binding StatusText}" FontSize="11" FontWeight="SemiBold"
+                             Foreground="{Binding StatusForeground}" />
+                </Border>
+                <StackPanel Grid.Column="1" Margin="10,0" Spacing="2" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding GrantedText}" FontSize="12.5" />
+                  <TextBlock Text="{Binding TitleText}" Classes="subtitle" IsVisible="{Binding HasTitle}"
+                             TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <TextBlock Grid.Column="2" Text="{Binding ExpiresText}" FontSize="12.5"
+                           VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0,0,0" />
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+
+    <TextBlock x:Name="HintText" Classes="subtitle" TextWrapping="Wrap" />
+
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button x:Name="ConfirmButton" Classes="primary" Content="确认重置" Click="OnConfirm" />
+      <Button Classes="toolbar" Content="取消" Click="OnCancel" />
+    </StackPanel>
+  </StackPanel>
+</Window>

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=OpenCode Account Manager
+Comment=Manage OpenCode accounts
+Exec=@OCAM_EXEC@
+Icon=opencode-account-manager
+Terminal=false
+Categories=Utility;
+X-OpenCodeAccountManager-Managed=true

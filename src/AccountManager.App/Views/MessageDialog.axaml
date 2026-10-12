@@ -1,0 +1,17 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AccountManager.App.Views.MessageDialog"
+        Width="460" SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Icon="avares://OpenCodeAccountManager/Assets/app.ico"
+        Title="提示">
+  <StackPanel Margin="22" Spacing="16">
+    <TextBlock x:Name="TitleText" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" />
+    <TextBlock x:Name="MessageText" TextWrapping="Wrap" MaxWidth="410" />
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button x:Name="YesButton" Classes="primary" Content="确定" Click="OnYes" />
+      <Button x:Name="NoButton" Classes="toolbar" Content="取消" Click="OnNo" />
+    </StackPanel>
+  </StackPanel>
+</Window>

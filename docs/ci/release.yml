@@ -1,0 +1,87 @@
+# Copy this file to .github/workflows/release.yml to enable it (see docs/RELEASING.md).
+name: Build release
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Test
+        run: dotnet test AccountManager.sln -c Release --nologo
+      - name: Build the exe and checksum
+        shell: pwsh
+        run: |
+          $version = ([xml](Get-Content src/AccountManager.App/AccountManager.App.csproj -Raw)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") { throw 'Tag and project version differ.' }
+          ./scripts/Publish-Release.ps1 -Version $version
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          path: |
+            release/*/OpenCodeAccountManager-win-x64.exe
+            release/*/OpenCodeAccountManager-win-x64.exe.sha256
+          if-no-files-found: error
+          retention-days: 14
+
+  deb:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Check the version matches the tag
+        run: |
+          version="$(sed -nE 's@.*<Version>([0-9]+\.[0-9]+\.[0-9]+)</Version>.*@\1@p' src/AccountManager.App/AccountManager.App.csproj | head -n 1)"
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "$GITHUB_REF_NAME" != "v$version" ]; then echo 'Tag and project version differ.'; exit 1; fi
+      - name: Test the update helper
+        run: bash scripts/Test-Deb-Helper.sh
+      - name: Build the .deb
+        run: |
+          scripts/Publish-Linux.sh "$VERSION" "$RUNNER_TEMP/publish"
+          scripts/Build-Deb.sh "$RUNNER_TEMP/publish" "$RUNNER_TEMP/deb" "$VERSION"
+          mkdir -p release-deb && cp "$RUNNER_TEMP"/deb/*.deb "$RUNNER_TEMP"/deb/*.deb.sha256 release-deb/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deb-release
+          path: release-deb/*
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    if: github.ref_type == 'tag'
+    needs: [windows, deb]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: assets
+          merge-multiple: true
+      - name: Upload the assets that the release does not have yet
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="$GITHUB_REF_NAME"
+          if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$tag" --repo "$GITHUB_REPOSITORY" --verify-tag --title "OpenCode Account Manager $tag" \
+              --notes "Windows x64 exe and Ubuntu .deb. Confirm an upgrade in the app to download, verify and restart."
+          fi
+          existing="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name')"
+          while IFS= read -r file; do
+            name="$(basename "$file")"
+            if grep -Fxq "$name" <<<"$existing"; then echo "keep existing $name"; else gh release upload "$tag" "$file" --repo "$GITHUB_REPOSITORY"; fi
+          done < <(find assets -type f \( -name '*.exe' -o -name '*.deb' -o -name '*.sha256' \) | sort)

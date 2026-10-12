@@ -1,0 +1,65 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AccountManager.App.Views.SettingsDialog"
+        Width="560" Height="580" MinWidth="380" MinHeight="260"
+        SizeToContent="Manual" CanResize="True" SystemDecorations="Full"
+        WindowStartupLocation="CenterOwner"
+        Icon="avares://OpenCodeAccountManager/Assets/app.ico"
+        Title="设置">
+  <Window.Resources>
+    <x:String x:Key="CliHelp">留空自动检测桌面版附带的 CLI。检测失败时可手动选择 opencode-cli 可执行文件；一般不需要填写。</x:String>
+    <x:String x:Key="RefreshHelp">自动刷新查询当前 Codex 账号；启动时会读取账号并查询一轮。列表勾选只影响手动刷新。开启自动切号后会定期检查全部 Codex 账号。</x:String>
+    <x:String x:Key="SwitchHelp">按额度消耗速度提前切号，预留 5 小时窗口 5%、周窗口 2%；优先同团队及有余额的账号，已耗尽账号不参与。额度偏低时自动缩短查询间隔。</x:String>
+    <x:String x:Key="WebDavHelp">上传导出带时间戳的账号 JSON；下载取最新文件进入导入预览。请使用 HTTPS 和可信服务端。坚果云等需要第三方应用密码，不要填写登录密码。</x:String>
+  </Window.Resources>
+  <Grid Margin="18" RowDefinitions="Auto,*,Auto">
+    <TextBlock Text="设置" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12" />
+    <ScrollViewer x:Name="SettingsScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Spacing="12" Margin="0,0,8,4">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock Text="自动刷新（分钟）" FontWeight="SemiBold" VerticalAlignment="Center" />
+          <Button Classes="help" Content="ⓘ" ToolTip.Tip="{StaticResource RefreshHelp}" Click="OnHelp" />
+        </StackPanel>
+        <WrapPanel>
+          <NumericUpDown x:Name="IntervalBox" Minimum="1" Maximum="240" Increment="1" FormatString="0" Width="120" Margin="0,0,12,0" />
+          <CheckBox x:Name="AutoSwitchBox" Content="自动切换账号" VerticalAlignment="Center"
+                    ToolTip.Tip="{StaticResource SwitchHelp}" />
+        </WrapPanel>
+
+        <Separator Margin="0,2" />
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock Text="OpenCode CLI 路径" FontWeight="SemiBold" VerticalAlignment="Center" />
+          <Button Classes="help" Content="ⓘ" ToolTip.Tip="{StaticResource CliHelp}" Click="OnHelp" />
+        </StackPanel>
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBox x:Name="CliBox" Watermark="自动检测" ToolTip.Tip="{StaticResource CliHelp}" />
+          <Button Grid.Column="1" Classes="toolbar" Content="浏览…" Click="OnBrowse" Margin="8,0,0,0" />
+        </Grid>
+
+        <Separator Margin="0,2" />
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock Text="WebDAV 同步" FontWeight="SemiBold" VerticalAlignment="Center" />
+          <Button Classes="help" Content="ⓘ" ToolTip.Tip="{StaticResource WebDavHelp}" Click="OnHelp" />
+        </StackPanel>
+        <TextBox x:Name="WebDavUrlBox" Watermark="https://dav.example.com/dav/" ToolTip.Tip="{StaticResource WebDavHelp}" />
+        <Grid ColumnDefinitions="*,*">
+          <TextBox x:Name="WebDavUserBox" Grid.Column="0" Watermark="账号" />
+          <TextBox x:Name="WebDavPassBox" Grid.Column="1" Margin="8,0,0,0" PasswordChar="●" Watermark="应用密码（留空保持不变）"
+                   ToolTip.Tip="{StaticResource WebDavHelp}" />
+        </Grid>
+        <WrapPanel>
+          <Button Classes="toolbar" Content="上传到云端" Click="OnUpload" Margin="0,0,8,0" />
+          <Button Classes="toolbar" Content="从云端下载" Click="OnDownload" />
+        </WrapPanel>
+        <TextBlock Classes="subtitle" Text="账号 JSON 含明文令牌 / 密钥，请只同步到可信服务端。" TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+    <Border Grid.Row="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="0,12,0,0" Margin="0,12,0,0">
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+        <Button Classes="primary" Content="保存" Click="OnSave" />
+        <Button Classes="toolbar" Content="取消" Click="OnCancel" />
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>
